@@ -1,0 +1,72 @@
+# Invoked via: /build-pr [options]
+description = """Build HyperShift components (CLI, operators, images) from a PR and push to a repository."""
+
+prompt = """
+Perform the build of HyperShift components as specified by the user's flags.
+
+**Usage Examples:**
+
+1. **Build CLI and operator image**:
+   ```
+   /build-pr --cli --operator-image
+   ```
+
+2. **Build everything with a specific tag**:
+   ```
+   /build-pr --all --tag my-feature
+   ```
+
+3. **Build with custom image names**:
+   ```
+   /build-pr --operator-image --operator-name my-reg/hypershift-operator --tag v1.0
+   ```
+
+4. **Build a specific PR**:
+   ```
+   /build-pr --pr 1234 --all
+   ```
+
+## Implementation
+
+- The command executes the `hack/build-pr.sh` script with the provided flags.
+- It leverages the project's `Makefile` for binary builds and the system's container engine (podman/docker) for image builds.
+- It uses `Containerfile.operator` and `Containerfile.control-plane` for building operator images.
+
+### Process Flow
+
+1. **Pre-Build Actions (if requested)**:
+   - If the `--pr <PR_ID>` flag is provided:
+     - Fetch the PR: `git fetch upstream pull/<PR_ID>/head:pr-<PR_ID>`
+     - Checkout the branch: `git checkout pr-<PR_ID>`
+     - *Note: Ensure the repository is clean before checking out.*
+
+2. **Argument Identification**:
+   - Parse the provided flags to determine which components need to be built.
+   - Recognize `--cli`, `--hcp`, `--operator`, `--cpo`, `--operator-image`, `--cpo-image`, and `--all`.
+   - Capture optional `--tag`, `--operator-name`, `--cpo-name`, and `--push` values.
+
+3. **Execution**:
+   - Run `hack/build-pr.sh` with the collected flags (excluding `--pr`).
+   - For binary builds (`--cli`, `--hcp`, `--operator`, `--cpo`), it will trigger the corresponding `make` targets.
+   - For image builds (`--operator-image`, `--cpo-image`), it will use `podman` or `docker` with the appropriate `Containerfile`.
+   - If `--push` is specified, the images will be pushed to the registry.
+
+4. **Verification**:
+   - Monitor the output of the build script for any errors.
+   - Ensure the binaries are placed in the `bin/` directory (or the specified `OUT_DIR`).
+   - Confirm that images are tagged and pushed correctly.
+
+## Options:
+- `--cli`: Build hypershift CLI
+- `--hcp`: Build hcp CLI (product CLI)
+- `--operator`: Build hypershift-operator binary
+- `--cpo`: Build control-plane-operator binary
+- `--operator-image`: Build hypershift-operator container image
+- `--cpo-image`: Build control-plane-operator container image
+- `--all`: Build everything
+- `--tag <tag>`: Set image tag (default: latest)
+- `--push`: Push built images to registry
+- `--operator-name <name>`: Set hypershift-operator image name
+- `--cpo-name <name>`: Set control-plane-operator image name
+- `--pr <id>`: Checkout a specific PR before building (e.g., --pr 1234)
+"""

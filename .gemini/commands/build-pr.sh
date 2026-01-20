@@ -25,8 +25,6 @@ info() {
 usage() {
     echo "Usage: $0 [options] [components...]"
     echo ""
-    echo "Build HyperShift components (CLI, images, operators) from a PR and push to a repository."
-    echo ""
     echo "Components:"
     echo "  --cli              Build hypershift CLI"
     echo "  --hcp              Build hcp CLI (product CLI)"

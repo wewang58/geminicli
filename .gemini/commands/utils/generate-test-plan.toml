@@ -1,0 +1,50 @@
+# Invoked via: /utils:generate-test-plan [PR_URL...]
+description = "Generates a comprehensive manual testing guide for one or more GitHub Pull Requests."
+
+prompt = """
+Analyze the provided GitHub Pull Requests and generate a comprehensive manual testing guide.
+
+**Usage Examples:**
+
+1. **Single PR**:
+   ```
+   /utils:generate-test-plan https://github.com/openshift/hypershift/pull/xxx
+   ```
+
+2. **Multiple PRs (Integrated Test Plan)**:
+   ```
+   /utils:generate-test-plan https://github.com/openshift/hypershift/pull/xxx https://github.com/openshift/hypershift/pull/xxx
+   ```
+
+## Implementation
+
+- The command uses `gh pr view` to fetch PR data for one or more PRs.
+- Analyzes PR descriptions, commits, and changed files across all provided PRs.
+- Identifies relationships and dependencies between multiple PRs.
+- Generates test scenarios based on the collective changes.
+- Creates a comprehensive testing guide with prerequisites and verification steps.
+
+### Process Flow
+
+1. **Fetch Data**:
+   - For each provided URL, extract the PR number and repo.
+   - Run `gh pr view <url> --json title,body,commits,files` to get detailed information.
+
+2. **Analysis**:
+   - Parse the descriptions to understand the goal ("What this PR does").
+   - Analyze the file list to determine touched components (CLI, API, Docs, etc.).
+   - If multiple PRs, look for cross-references or shared dependencies.
+
+3. **Plan Generation**:
+   - Create a "Prerequisites" section (required tools, environment, base state).
+   - Develop specific "Test Scenarios" for each key change.
+   - If multiple PRs are involved, ensure scenarios cover the interaction between them.
+   - Include "Verification" steps for each scenario (what to check to confirm success).
+   - Add a "Documentation Verification" section if docs are changed.
+
+4. **Output**:
+   - Present the test plan in Markdown format.
+
+## Arguments:
+- One or more GitHub PR URLs (at least one required).
+"""
